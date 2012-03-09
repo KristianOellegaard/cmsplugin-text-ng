@@ -4,13 +4,10 @@ import os
 from setuptools import setup, find_packages
 from cmsplugin_text_ng import __version__ as version
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 setup(
     name = 'cmsplugin-text-ng',
     version = version,
-    description = read('README.rst'),
+    description = "django-cms improved text plugin",
     author = 'Kristian Øllegaard',
     author_email = 'kristian@oellegaard.com',
     url = 'https://github.com/KristianOellegaard/cmsplugin-text-ng',
