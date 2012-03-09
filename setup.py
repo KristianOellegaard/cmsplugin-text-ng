@@ -10,7 +10,7 @@ def read(fname):
 setup(
     name = 'cmsplugin-text-ng',
     version = version,
-    description = read('README.rst.rst'),
+    description = read('README.rst'),
     author = 'Kristian Øllegaard',
     author_email = 'kristian@oellegaard.com',
     url = 'https://github.com/KristianOellegaard/cmsplugin-text-ng',
