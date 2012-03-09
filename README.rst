@@ -5,9 +5,10 @@ e.g.
 
 Example: template.html
 ----------------------
+
 <div class='someclass'>
     {{ body|safe }} {# Text plugin content goes here #}
-</div?
+</div>
 
 
 I will add more docs when time allows it, but otherwise have a look at the source, its definitely not rocket science.
