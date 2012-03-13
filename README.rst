@@ -13,4 +13,4 @@ Example: template.html
 
 I will add more docs when time allows it, but otherwise have a look at the source, its definitely not rocket science.
 
-Can be distributed under the BSD License
+See LICENSE for copyright/redistribution terms (New BSD License)
