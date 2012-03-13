@@ -1,4 +1,4 @@
-Awesome text plugin for django. Features text plugins wrapped in HTML code.
+Awesome text plugin for django-cms. Features text plugins wrapped in HTML code.
 
 e.g.
 
