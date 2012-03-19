@@ -35,10 +35,6 @@ class TextPluginNextGeneration(TextPlugin):
         else:
             return super(TextPluginNextGeneration, self).get_form(request, obj, **kwargs)
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj and obj.pk:
-            return []
-
     def save_model(self, request, obj, form, change):
         super(TextPluginNextGeneration, self).save_model(request, obj, form, change)
         for label, variable in get_variables_from_template(obj.template.path).items():
@@ -61,7 +57,8 @@ class TextPluginNextGeneration(TextPlugin):
         variables = get_variables_from_template(t)
         for label, variable in variables.items():
             model_type = variable['type']
-            context[label] = model_type.objects.select_related(*model_type.select_related).get(text_ng=instance, label=label).value
+            var, created = model_type.objects.select_related(*model_type.select_related).get_or_create(text_ng=instance, label=label)
+            context[label] = var.value
         context.update({'body': mark_safe(t.render(context))})
         return context
 

@@ -55,4 +55,8 @@ class TextNGVariableBase(models.Model):
 class TextNGVariableText(TextNGVariableBase):
     value = models.TextField(_('value'), null=True, blank=True)
 
+    class Meta:
+        verbose_name = _('text')
+        verbose_name_plural = _('texts')
+
 register_type('text', TextNGVariableText)
