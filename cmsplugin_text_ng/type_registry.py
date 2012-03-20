@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from cmsplugin_text_ng import exceptions
+
 _registry = {}
-
-class VariableTypeAlreadyRegistered(Exception):
-    pass
-
-
-class InvalidType(Exception):
-    pass
 
 def register_type(type_name, model_class):
     from cmsplugin_text_ng.models import TextNGVariableBase
@@ -16,11 +11,11 @@ def register_type(type_name, model_class):
             # already registered
             return
         else:
-            raise VariableTypeAlreadyRegistered(
+            raise exceptions.VariableTypeAlreadyRegistered(
                 'The type "%s" is already registered by %s' % (type_name, _registry[type_name].__name__)
             )
     if not issubclass(model_class, TextNGVariableBase):
-        raise InvalidType('%s is not a subclass of TextNGVariableBase' % model_class.__name__)
+        raise exceptions.InvalidType('%s is not a subclass of TextNGVariableBase' % model_class.__name__)
     # TODO: validate that there is a "value" field that is nullable
     _registry[type_name] = model_class
 
