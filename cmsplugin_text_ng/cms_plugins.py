@@ -10,7 +10,6 @@ from cmsplugin_text_ng.forms import PluginAddForm, PluginEditForm
 
 from cmsplugin_text_ng.models import TextNG
 from cmsplugin_text_ng.utils import get_variables_from_template
-from cmsplugin_text_ng import type_registry
 
 
 class TextPluginNextGeneration(TextPlugin):
@@ -18,16 +17,14 @@ class TextPluginNextGeneration(TextPlugin):
     name = _("Text NG")
     form = PluginEditForm
 
-    def __init__(self, model=None,  admin_site=None):
-        self.inlines = []
-        for model_class in type_registry.get_type_list():
-            class TypeStackedInline(StackedInline):
-                model = model_class
-                extra = 0
-                can_delete = False
-                readonly_fields = ('label',)
-            self.inlines.append(TypeStackedInline)
-        super(TextPluginNextGeneration, self).__init__(model, admin_site)
+    def get_inline_for_model(self, model_class):
+        attrs = {
+            'model': model_class,
+            'extra': 0,
+            'can_delete': False,
+            'readonly_fields': ('label',),
+        }
+        return type('%sTypeStackedInline' % model_class.__name__, (StackedInline,), attrs)
 
     def get_form(self, request, obj=None, **kwargs):
         if not obj:
@@ -40,16 +37,25 @@ class TextPluginNextGeneration(TextPlugin):
         for label, variable in get_variables_from_template(obj.template.path).items():
             variable['type'].objects.get_or_create(text_ng=obj, label=label)
 
-    def get_formsets(self, request, obj=None):
-        if not obj:
-            raise StopIteration()
+    def change_view(self, request, object_id, extra_context=None):
+        obj = self.get_object(request, object_id)
         types = defaultdict(lambda: 0)
         for label, variable in get_variables_from_template(obj.template.path).items():
             types[variable['type']] += 1
-        for inline in self.inline_instances:
-            if inline.model in types:
-                inline.max_num = types[inline.model]
-                yield inline.get_formset(request, obj)
+            variable['type'].objects.get_or_create(text_ng=obj, label=label)
+        self.inline_instances = []
+        self.inlines = []
+        for model_class in types.keys():
+            inline = self.get_inline_for_model(model_class)
+            inline.max_num = types[model_class]
+            self.inlines.append(inline)
+            self.inline_instances.append(inline(self.model, self.admin_site))
+        return super(TextPluginNextGeneration, self).change_view(request, object_id, extra_context)
+
+    def add_view(self, request, form_url='', extra_context=None):
+        self.inlines = []
+        self.inline_instances = []
+        return super(TextPluginNextGeneration, self).add_view(request, form_url, extra_context)
 
     def render(self, context, instance, placeholder):
         context = super(TextPluginNextGeneration, self).render(context, instance, placeholder)
