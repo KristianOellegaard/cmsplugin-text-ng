@@ -4,6 +4,12 @@ cmsplugin-text-ng
 An enhanced version of the ``Text`` plugin for `django CMS`_. It allows wrapping
 the text plugin inside a template selectable by the CMS content editor.
 
+.. note::
+    This plugin is not meant to replace ``cms.plugins.text``. It is an
+    enhancement for certain use cases. For most types of content, you should
+    probably still use ``cms.plugins.text`` or write a specifically tailored
+    plugin.
+
 Installation
 ============
 
