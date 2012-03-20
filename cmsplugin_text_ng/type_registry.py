@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db.models import FieldDoesNotExist
 
 from cmsplugin_text_ng import exceptions
 
@@ -16,7 +17,12 @@ def register_type(type_name, model_class):
             )
     if not issubclass(model_class, TextNGVariableBase):
         raise exceptions.InvalidType('%s is not a subclass of TextNGVariableBase' % model_class.__name__)
-    # TODO: validate that there is a "value" field that is nullable
+    try:
+        field = model_class._meta.get_field_by_name('value')[0]
+    except FieldDoesNotExist:
+        raise exceptions.InvalidType('%s does not define a "value" field' % model_class.__name__)
+    if not field.null:
+        raise exceptions.InvalidType('"value" field of %s is not nullable' % model_class.__name__)
     _registry[type_name] = model_class
 
 def get_type(type_name):
