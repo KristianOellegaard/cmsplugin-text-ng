@@ -47,6 +47,9 @@ class TextNGVariableBase(models.Model):
     text_ng = models.ForeignKey(TextNG, related_name='+')
     label = models.CharField(_('label'), max_length=20, validators=[RegexValidator(regex='[_a-z]+', message=_('Only lower case characters.'))])
 
+    def __unicode__(self):
+        return self.label
+
     class Meta:
         abstract = True
         unique_together = ('text_ng', 'label')
@@ -54,6 +57,9 @@ class TextNGVariableBase(models.Model):
 
 class TextNGVariableText(TextNGVariableBase):
     value = models.TextField(_('value'), null=True, blank=True)
+
+    def __unicode__(self):
+        return self.label + (' (%s)' % self.value if self.value else '')
 
     class Meta:
         verbose_name = _('text')
