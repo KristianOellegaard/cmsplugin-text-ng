@@ -4,7 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.plugins.text.models import AbstractText
 
-from cmsplugin_text_ng.type_registry import register_type
+from cmsplugin_text_ng.type_registry import register_type, get_type_list
+
 
 class TextNGTemplateCategory(models.Model):
     title = models.CharField(max_length=128)
@@ -36,6 +37,13 @@ class TextNGTemplate(models.Model):
 
 class TextNG(AbstractText):
     template = models.ForeignKey(TextNGTemplate)
+
+    def copy_relations(self, old_instance):
+        for model in get_type_list():
+            for instance in model.objects.filter(text_ng=old_instance):
+                instance.pk = None
+                instance.text_ng = self
+                instance.save()
 
     class Meta:
         verbose_name = _('text')
