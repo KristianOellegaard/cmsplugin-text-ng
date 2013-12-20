@@ -25,8 +25,10 @@ def register_type(type_name, model_class):
         raise exceptions.InvalidType('"value" field of %s is not nullable' % model_class.__name__)
     _registry[type_name] = model_class
 
+
 def get_type(type_name):
     return _registry[type_name]
+
 
 def get_type_list():
     return _registry.values()
