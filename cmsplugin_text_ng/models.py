@@ -2,8 +2,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from cms.plugins.text.models import AbstractText
-
+from cmsplugin_text_ng.compat import AbstractText
 from cmsplugin_text_ng.type_registry import register_type, get_type_list
 
 

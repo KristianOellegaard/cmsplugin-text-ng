@@ -1,5 +1,7 @@
-from cmsplugin_text_ng.models import TextNGTemplate, TextNGTemplateCategory
 from django.contrib import admin
+
+from cmsplugin_text_ng.models import TextNGTemplate, TextNGTemplateCategory
+
 
 class TextNGTemplateAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'path')

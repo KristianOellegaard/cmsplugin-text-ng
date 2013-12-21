@@ -1,13 +1,13 @@
 from collections import defaultdict
-from django import template
+from django.template.loader import get_template
 from django.contrib.admin import StackedInline
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 
-from cms.plugins.text.cms_plugins import TextPlugin
 from cms.plugin_pool import plugin_pool
 from cmsplugin_text_ng.forms import PluginAddForm, PluginEditForm
 
+from cmsplugin_text_ng.compat import TextPlugin
 from cmsplugin_text_ng.models import TextNG
 from cmsplugin_text_ng.utils import get_variables_from_template
 
@@ -37,29 +37,25 @@ class TextPluginNextGeneration(TextPlugin):
         for label, variable in get_variables_from_template(obj.template.path).items():
             variable['type'].objects.get_or_create(text_ng=obj, label=label)
 
-    def change_view(self, request, object_id, extra_context=None):
-        obj = self.get_object(request, object_id)
-        types = defaultdict(lambda: 0)
-        for label, variable in get_variables_from_template(obj.template.path).items():
-            types[variable['type']] += 1
-            variable['type'].objects.get_or_create(text_ng=obj, label=label)
-        self.inline_instances = []
-        self.inlines = []
-        for model_class in types.keys():
-            inline = self.get_inline_for_model(model_class)
-            inline.max_num = types[model_class]
-            self.inlines.append(inline)
-            self.inline_instances.append(inline(self.model, self.admin_site))
-        return super(TextPluginNextGeneration, self).change_view(request, object_id, extra_context)
+    def get_inline_instances(self, request, obj=None):
+        inline_instances = []
 
-    def add_view(self, request, form_url='', extra_context=None):
-        self.inlines = []
-        self.inline_instances = []
-        return super(TextPluginNextGeneration, self).add_view(request, form_url, extra_context)
+        if obj and obj.pk:
+            types = defaultdict(lambda: 0)
+
+            for label, variable in get_variables_from_template(obj.template.path).items():
+                types[variable['type']] += 1
+                variable['type'].objects.get_or_create(text_ng=obj, label=label)
+
+            for model_class in types.keys():
+                inline = self.get_inline_for_model(model_class)
+                inline.max_num = types[model_class]
+                inline_instances.append(inline(self.model, self.admin_site))
+        return inline_instances
 
     def render(self, context, instance, placeholder):
         context = super(TextPluginNextGeneration, self).render(context, instance, placeholder)
-        t = template.loader.get_template(instance.template.path)
+        t = get_template(instance.template.path)
         variables = get_variables_from_template(t)
         for label, variable in variables.items():
             model_type = variable['type']
