@@ -10,8 +10,16 @@ the text plugin inside a template selectable by the CMS content editor.
     probably still use ``cms.plugins.text`` or write a specifically tailored
     plugin.
 
+Requirements
+------------
+
+* Django 1.4+
+* Django CMS 2.3+
+* djangocms-text-ckeditor (only if using cms 3+)
+
+
 Installation
-============
+------------
 
  * Add ``cmsplugin_text_ng`` to your ``INSTALLED_APPS``.
  * Create some templates (more on that soon) and add them in the admin.
