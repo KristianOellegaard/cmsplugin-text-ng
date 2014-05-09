@@ -3,6 +3,7 @@ from django.template.loader import get_template
 from django.contrib.admin import StackedInline
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
+from django.utils.datastructures import SortedDict
 
 from cms.plugin_pool import plugin_pool
 from cmsplugin_text_ng.forms import PluginAddForm, PluginEditForm
@@ -41,9 +42,10 @@ class TextPluginNextGeneration(TextPlugin):
         inline_instances = []
 
         if obj and obj.pk:
-            types = defaultdict(lambda: 0)
-
-            for label, variable in get_variables_from_template(obj.template.path).items():
+            variables = get_variables_from_template(obj.template.path).items()
+            types = SortedDict()
+            for label, variable in variables:
+                types[variable['type']] = types.get(variable['type'], 0)  # can't use defaultdict :(
                 types[variable['type']] += 1
                 variable['type'].objects.get_or_create(text_ng=obj, label=label)
 
@@ -55,13 +57,13 @@ class TextPluginNextGeneration(TextPlugin):
 
     def render(self, context, instance, placeholder):
         context = super(TextPluginNextGeneration, self).render(context, instance, placeholder)
-        t = get_template(instance.template.path)
-        variables = get_variables_from_template(t)
+        template = get_template(instance.template.path)
+        variables = get_variables_from_template(template)
         for label, variable in variables.items():
             model_type = variable['type']
             var, created = model_type.objects.select_related(*model_type.select_related).get_or_create(text_ng=instance, label=label)
             context[label] = var.value
-        context.update({'body': mark_safe(t.render(context))})
+        context.update({'body': mark_safe(template.render(context))})
         return context
 
 
