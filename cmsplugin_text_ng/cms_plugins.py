@@ -33,6 +33,17 @@ class TextPluginNextGeneration(TextPlugin):
         else:
             return super(TextPluginNextGeneration, self).get_form(request, obj, **kwargs)
 
+    def save_model(self, request, obj, form, change):
+        super(TextPluginNextGeneration, self).save_model(request, obj, form, change)
+        for label, variable in get_variables_from_template(obj.template.path).items():
+            model_class = variable['type']
+            initial_field_values = variable['initial_field_values']
+            model_class.objects.get_or_create(
+                text_ng=obj,
+                label=label,
+                defaults=initial_field_values
+            )
+
     def get_inline_instances(self, request, obj=None):
         inline_instances = []
 
