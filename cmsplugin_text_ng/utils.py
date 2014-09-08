@@ -30,6 +30,7 @@ def get_variables_from_template(template):
             variables[node.variable_name] = {
                 'type': get_type(node.variable_type),
                 'optional': node.optional,
+                'initial_field_values': node.initial_field_values,
             }
         except KeyError:
             raise TemplateSyntaxError('%s type not registered - %s' % (

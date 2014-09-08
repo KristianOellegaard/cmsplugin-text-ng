@@ -33,11 +33,6 @@ class TextPluginNextGeneration(TextPlugin):
         else:
             return super(TextPluginNextGeneration, self).get_form(request, obj, **kwargs)
 
-    def save_model(self, request, obj, form, change):
-        super(TextPluginNextGeneration, self).save_model(request, obj, form, change)
-        for label, variable in get_variables_from_template(obj.template.path).items():
-            variable['type'].objects.get_or_create(text_ng=obj, label=label)
-
     def get_inline_instances(self, request, obj=None):
         inline_instances = []
 
@@ -45,24 +40,40 @@ class TextPluginNextGeneration(TextPlugin):
             variables = get_variables_from_template(obj.template.path).items()
             types = SortedDict()
             for label, variable in variables:
-                types[variable['type']] = types.get(variable['type'], 0)  # can't use defaultdict :(
-                types[variable['type']] += 1
-                variable['type'].objects.get_or_create(text_ng=obj, label=label)
+                model_class = variable['type']
+                initial_field_values = variable['initial_field_values']
+                types[model_class] = types.get(model_class, 0)  # can't use defaultdict :(
+                types[model_class] += 1
+                model_class.objects.get_or_create(
+                    text_ng=obj,
+                    label=label,
+                    defaults=initial_field_values
+                )
 
             for model_class in types.keys():
                 inline = self.get_inline_for_model(model_class)
                 inline.max_num = types[model_class]
-                inline_instances.append(inline(self.model, self.admin_site))
+                inline_instance = inline(self.model, self.admin_site)
+                inline_instances.append(inline_instance)
         return inline_instances
 
     def render(self, context, instance, placeholder):
         context = super(TextPluginNextGeneration, self).render(context, instance, placeholder)
         template = get_template(instance.template.path)
         variables = get_variables_from_template(template)
+
         for label, variable in variables.items():
-            model_type = variable['type']
-            var, created = model_type.objects.select_related(*model_type.select_related).get_or_create(text_ng=instance, label=label)
+            model_class = variable['type']
+            initial_field_values = variable['initial_field_values']
+            instance_context_name = '%s_instance'% label
+            model_queryset = model_class.objects.select_related(*model_class.select_related)
+            var = model_queryset.get_or_create(
+                text_ng=instance,
+                label=label,
+                defaults=initial_field_values
+            )[0]
             context[label] = var.value
+            context[instance_context_name] = var
         context.update({'body': mark_safe(template.render(context))})
         return context
 
