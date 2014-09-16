@@ -1,3 +1,5 @@
+from distutils.version import StrictVersion
+import django
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -72,4 +74,5 @@ class TextNGVariableText(TextNGVariableBase):
         verbose_name = _('text')
         verbose_name_plural = _('texts')
 
-register_type('text', TextNGVariableText)
+if StrictVersion(django.get_version()) < StrictVersion('1.7'):
+    register_type('text', TextNGVariableText)
